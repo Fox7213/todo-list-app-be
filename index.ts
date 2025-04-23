@@ -1,8 +1,8 @@
+import cors from 'cors'; // Импортируем cors
 import express, { Request, Response } from 'express';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { Task } from './task';
-import cors from 'cors'; // Импортируем cors
+import { Priority, Task } from './task';
 
 const app = express();
 const PORT = 3000;
@@ -24,7 +24,7 @@ const writeTasks = (tasks: Task[]) => {
 
 // 1. Добавить задачу
 app.post('/api/tasks', (req: Request, res: Response) => {
-    const { title, description, dueDate } = req.body;
+    const { title, description, dueDate, priority } = req.body;
     const tasks = readTasks();
     const newTask: Task = {
         id: uuidv4(),
@@ -34,8 +34,9 @@ app.post('/api/tasks', (req: Request, res: Response) => {
         createdAt: new Date(),
         dueDate: dueDate ? new Date(dueDate) : undefined,
         deleted: false,
-        order: 0,
+        order: priority || Priority.LOW,
     };
+    console.log(newTask);
     tasks.push(newTask);
     writeTasks(tasks);
     res.status(201).json(newTask);
@@ -78,13 +79,16 @@ app.delete('/api/tasks/:id', (req: Request, res: Response) => {
 // 5. Изменить задачу
 app.patch('/api/tasks/:id', (req: Request, res: Response) => {
     const { id } = req.params;
-    const { title, description, dueDate } = req.body;
+    const { title, description, dueDate, priority, createdAt } = req.body;
+    console.log(req.body);
     const tasks = readTasks();
     const task = tasks.find(t => t.id === id);
     if (task) {
         task.title = title || task.title;
         task.description = description || task.description;
         task.dueDate = dueDate ? new Date(dueDate) : task.dueDate;
+        task.order = Number.isInteger(priority) ? priority : task.order;
+        task.createdAt = createdAt || task.createdAt;
         writeTasks(tasks);
         res.status(200).json(task);
     } else {

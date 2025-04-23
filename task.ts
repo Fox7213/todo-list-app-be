@@ -1,3 +1,9 @@
+export enum Priority {
+    LOW = 0,
+    MEDIUM = 1,
+    HIGH = 2,
+}
+
 export interface Task {
     id: string;
     title: string;
@@ -6,5 +12,5 @@ export interface Task {
     createdAt: Date;
     dueDate?: Date;
     deleted: boolean;
-    order: number;
+    order: Priority;
 }
